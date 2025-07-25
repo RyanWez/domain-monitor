@@ -2,18 +2,23 @@
   "version": 2,
   "builds": [
     {
-      "src": "server/index.js",
+      "src": "api/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server/index.js"
+      "dest": "api/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "api/index.js"
     }
   ],
   "env": {
     "NODE_ENV": "production",
+    "DATABASE_URL": "postgresql://neondb_owner:npg_VYw4Lc9DNCma@ep-shy-water-a13coboj-pooler.ap-southeast-1.aws.neon.tech/domain_monitor?sslmode=require",
     "DB_HOST": "ep-shy-water-a13coboj-pooler.ap-southeast-1.aws.neon.tech",
     "DB_PORT": "5432",
     "DB_NAME": "domain_monitor",
@@ -23,6 +28,6 @@
     "CHECK_INTERVAL_MINUTES": "5",
     "TELEGRAM_BOT_TOKEN": "8083109629:AAEKsfuFz5fUQdSn4uddYkSe3R70UbMNDHg",
     "TELEGRAM_CHAT_ID": "-4936044808",
-    "CORS_ORIGINS": "https://domain-monitor-client.vercel.app,http://localhost:3000"
+    "CORS_ORIGINS": "https://domain-monitor-client.vercel.app,http://localhost:3000,https://domain-monitor-frontend.vercel.app"
   }
 }

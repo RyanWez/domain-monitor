@@ -3,7 +3,7 @@ const path = require('path');
 
 // Create .env file for production build
 const envContent = `
-REACT_APP_API_URL=https://domain-monitor.vercel.app
+REACT_APP_API_URL=https://domain-monitor-api.vercel.app
 `;
 
 fs.writeFileSync(path.join(__dirname, '.env.production'), envContent);

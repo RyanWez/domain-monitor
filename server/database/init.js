@@ -1,11 +1,12 @@
 const { Pool } = require('pg');
 
+// Use connection string for Neon.tech
+const connectionString = process.env.DATABASE_URL ||
+  `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?sslmode=require`;
+
 const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  connectionString,
+  ssl: { rejectUnauthorized: false },
 });
 
 const initDatabase = async () => {
@@ -129,10 +130,10 @@ const initDatabase = async () => {
     // Get role IDs and assign permissions
     const adminRole = await pool.query('SELECT id FROM roles WHERE name = $1', ['admin']);
     const userRole = await pool.query('SELECT id FROM roles WHERE name = $1', ['user']);
-    
+
     if (adminRole.rows.length > 0) {
       const adminRoleId = adminRole.rows[0].id;
-      
+
       // Assign all permissions to admin role
       const allPermissions = await pool.query('SELECT id FROM permissions');
       for (const permission of allPermissions.rows) {
@@ -142,16 +143,16 @@ const initDatabase = async () => {
         );
       }
     }
-    
+
     if (userRole.rows.length > 0) {
       const userRoleId = userRole.rows[0].id;
-      
+
       // Assign limited permissions to user role
       const limitedPermissions = await pool.query(
         'SELECT id FROM permissions WHERE name IN ($1, $2, $3, $4)',
         ['view_domains', 'view_groups', 'check_domain', 'view_reports']
       );
-      
+
       for (const permission of limitedPermissions.rows) {
         await pool.query(
           'INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
@@ -162,11 +163,11 @@ const initDatabase = async () => {
 
     // Create default admin user if not exists
     const defaultAdmin = await pool.query('SELECT id FROM users WHERE username = $1', ['Ryan']);
-    
+
     if (defaultAdmin.rows.length === 0 && adminRole.rows.length > 0) {
       // Password: Domain25@#
       const passwordHash = '$2a$10$8KzaNdKIMyOkASCUqYSYGONjwBJtjUoU5i8gxA1xUHlP3FQpKEVey';
-      
+
       await pool.query(
         'INSERT INTO users (username, email, password_hash, role_id) VALUES ($1, $2, $3, $4)',
         ['Ryan', 'admin@domain-monitor.com', passwordHash, adminRole.rows[0].id]
